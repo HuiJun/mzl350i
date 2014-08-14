@@ -36,12 +36,11 @@
 
 #define uchar   unsigned char
 #define uint unsigned int
-    short color[]={0xf800,0x07e0,0x001f,0xffe0,0x0000,0xffff,0x07ff,0xf81f};
+            short color[]={0xf800,0x07e0,0x001f,0xffe0,0x0000,0xffff,0x07ff,0xf81f};
 char *value=NULL;
 int hsize=0, vsize=0;
 
-void wr_comm(uchar out_data)
-{
+void wr_comm(uchar out_data) {
     LCD_CS_CLR;
     LCD_RS_CLR;
 
@@ -50,8 +49,7 @@ void wr_comm(uchar out_data)
     LCD_CS_SET;
 }
 
-void wr_dat(uchar out_data)
-{
+void wr_dat(uchar out_data) {
     LCD_CS_CLR;
     LCD_RS_SET;
 
@@ -60,21 +58,17 @@ void wr_dat(uchar out_data)
     LCD_CS_SET;
 }
 
-void LCD_WR_Data(uint val)
-{
+void LCD_WR_Data(uint val) {
     bcm2835_spi_transfer(val>>8);
     bcm2835_spi_transfer(val);
 }
 
-uint LCD_RD_REG16(uint index)
-{
+uint LCD_RD_REG16(uint index) {
     uint pd;
-
     return pd;
 }
 
-void LCD_Init()
-{
+void LCD_Init() {
     LCD_RST_CLR;
     delay (100);
     LCD_RST_SET;
@@ -170,8 +164,8 @@ void LCD_Init()
     wr_comm(0x0029);
     wr_comm(0x002C);
 }
-void ili9481_SetCursor(uint x,uint y)
-{
+
+void ili9481_SetCursor(uint x,uint y) {
     wr_comm(0x002B);
     wr_dat(x>>8);
     wr_dat(0x00FF&x);
@@ -184,8 +178,8 @@ void ili9481_SetCursor(uint x,uint y)
     wr_dat(0x0001);
     wr_dat(0x00df);
 }
-void ili9481_Setwindow(uint xs,uint xe,uint ys,uint ye)
-{
+
+void ili9481_Setwindow(uint xs,uint xe,uint ys,uint ye) {
     wr_comm(0x002a);
     wr_dat(xs>>8);
     wr_dat(xs);
@@ -200,14 +194,12 @@ void ili9481_Setwindow(uint xs,uint xe,uint ys,uint ye)
     wr_comm(0x002C);
 }
 
-void TFTSetXY(uint x,uint y)
-{
+void TFTSetXY(uint x,uint y) {
     ili9481_SetCursor(x,y);
     wr_comm(0x002C);
 }
 
-void LCD_test()
-{
+void LCD_test() {
     uint temp,num,i;
     char n;
 
@@ -216,51 +208,42 @@ void LCD_test()
     LCD_CS_CLR;
     LCD_RS_SET;
 
-    for(n=0;n<8;n++)
-        {
-            temp=color[n];
-            for(num=40*480;num>0;num--)
-                {
-                    LCD_WR_Data(temp);
-                }
+    for(n=0;n<8;n++) {
+        temp=color[n];
+        for(num=40*480;num>0;num--) {
+            LCD_WR_Data(temp);
         }
-    for(n=0;n<3;n++)
-        {
-            ili9481_Setwindow(0,480-1,0,320-1);
-            LCD_CS_CLR;
-            LCD_RS_SET;
+    }
+    for(n=0;n<3;n++) {
+        ili9481_Setwindow(0,480-1,0,320-1);
+        LCD_CS_CLR;
+        LCD_RS_SET;
 
-            temp=color[n];
-            for(i=0;i<320;i++)
-                {
-                    for(num=0;num<480;num++)
-                        {
-                            LCD_WR_Data(temp);
-                        }
-                }
+        temp=color[n];
+        for(i=0;i<320;i++) {
+            for(num=0;num<480;num++) {
+                LCD_WR_Data(temp);
+            }
         }
+    }
     LCD_CS_SET;
 }
 
-void LCD_clear(uint p)
-{
+void LCD_clear(uint p) {
     uint i,j;
     TFTSetXY(0,0);
     LCD_CS_CLR;
     LCD_RS_SET;
 
-    for(i=0;i<320;i++)
-        {
-            for(j=0;j<480;j++)
-                {
-                    LCD_WR_Data(p);
-                }
+    for(i=0;i<320;i++) {
+        for(j=0;j<480;j++) {
+            LCD_WR_Data(p);
         }
+    }
     LCD_CS_SET;
 }
 
-void write_dot(char dx,int dy,int color)
-{
+void write_dot(char dx,int dy,int color) {
     wr_comm(0x002A);
     wr_dat(dy>>8);
     wr_dat(dy);
@@ -279,8 +262,7 @@ void write_dot(char dx,int dy,int color)
     LCD_CS_SET;
 }
 
-void loadFrameBuffer_diff_960640()
-{
+void loadFrameBuffer_diff_960640() {
     int  xsize=960, ysize=640;
     unsigned char *buffer;
     FILE *infile=fopen("/dev/fb0","rb");
@@ -303,31 +285,27 @@ void loadFrameBuffer_diff_960640()
     buffer = (unsigned char *) malloc(xsize * ysize * 2);
     fseek(infile, 0, 0);
 
-    if (fread (buffer, xsize * ysize *2, sizeof(unsigned char), infile) != 1)
-        {
-
-            printf ("Read < %d chars when loading file %s\n", hsize*vsize*3, "ss");
-            printf ("config.txt setting error\n") ;
-            return;
-        }
+    if(fread (buffer, xsize * ysize *2, sizeof(unsigned char), infile) != 1) {
+        printf("Read < %d chars when loading file %s\n", hsize*vsize*3, "ss");
+        printf("config.txt setting error\n") ;
+        return;
+    }
     ili9481_Setwindow(0,480-1,0,320-1);
     LCD_CS_CLR;
     LCD_RS_SET;
 
-    for (i=0; i < ysize/2; i++)
-        {
-            for(j=0; j< xsize/2; j++)
-                {
-                    diffmap[i][j]=1;
-                    drawmap[0][i][j]=0;
-                    LCD_WR_Data(0);
-                    drawmap[1][i][j]=255;
-                }
+    for(i=0; i < ysize/2; i++) {
+        for(j=0; j< xsize/2; j++) {
+            diffmap[i][j]=1;
+            drawmap[0][i][j]=0;
+            LCD_WR_Data(0);
+            drawmap[1][i][j]=255;
         }
+    }
 
     flag=1;
 
-    while (1) {
+    while(1) {
         //while (time--) {
 
         numdiff=0;
@@ -335,7 +313,7 @@ void loadFrameBuffer_diff_960640()
         diffex=diffey=0;
         diffsx=diffsy=65535;
 
-        for(i=0; i < ysize; i+=2){
+        for(i=0; i < ysize; i+=2) {
             for(j=0; j < xsize; j+=2) {
                 offset =  (i * xsize+ j)*2;
                 p=(buffer[offset+1] << 8) | buffer[offset];
@@ -379,18 +357,18 @@ void loadFrameBuffer_diff_960640()
                 p=RGB565(r, g, b);
 
                 //drawmap[flag][i>>1][j>>1] = p;
-                if (drawmap[1-flag][i>>1][j>>1] != p) {
+                if(drawmap[1-flag][i>>1][j>>1] != p) {
                     drawmap[flag][i>>1][j>>1] = p;
                     diffmap[i>>1][j>>1]=1;
                     drawmap[1-flag][i>>1][j>>1]=p;
                     numdiff++;
-                    if ((i>>1) < diffsx)
+                    if((i>>1) < diffsx)
                         diffsx = i>>1;
-                    if ((i>>1) > diffex)
+                    if((i>>1) > diffex)
                         diffex = i >> 1;
-                    if ((j>>1)< diffsy)
+                    if((j>>1)< diffsy)
                         diffsy=j>>1;
-                    if ((j>>1)>diffey)
+                    if((j>>1)>diffey)
                         diffey = j >>1;
 
                 } else {
@@ -399,31 +377,32 @@ void loadFrameBuffer_diff_960640()
             }
 
         }
-        if (numdiff > 10){
+
+        if(numdiff > 10) {
             // printf ("(%d, %d) - (%d, %d)\n",diffsx, diffsy, diffex, diffey);
 
             //area = ((abs(diffex - diffsx)+1)*(1+abs(diffey-diffsy)));
             //printf("diff:%d, area:%d, cov:%f\n",numdiff, area,(1.0*numdiff)/area);
         }
-        if (numdiff< 2){
+
+        if(numdiff < 2) {
             ili9481_Setwindow(0,480-1,0,320-1);
             LCD_CS_CLR;
             LCD_RS_SET;
-            for (i=diffsx; i<=diffex; i++){
-                for (j=diffsy;j<=diffey; j++) {
-                    if (diffmap[i][j]!=0)
+            for(i=diffsx; i<=diffex; i++){
+                for(j=diffsy;j<=diffey; j++) {
+                    if(diffmap[i][j]!=0)
                         write_dot(i,j,drawmap[flag][i][j]);
                 }
             }
             usleep(700L);
-
-        } else{
+        } else {
             ili9481_Setwindow(diffsy,diffey,diffsx,diffex);
             LCD_CS_CLR;
             LCD_RS_SET;
             //printf ("(%d, %d) - (%d, %d)\n",diffsx, diffsy, diffex, diffey);
-            for (i=diffsx; i<=diffex; i++){
-                for (j=diffsy;j<=diffey; j++) {
+            for(i=diffsx; i<=diffex; i++){
+                for(j=diffsy;j<=diffey; j++) {
                     LCD_WR_Data(drawmap[flag][i][j]);
                 }
             }
@@ -431,13 +410,12 @@ void loadFrameBuffer_diff_960640()
 
         fseek(infile, 0, 0);
 
-        if (fread (buffer, xsize * ysize *2, sizeof(unsigned char), infile) != 1)
+        if(fread (buffer, xsize * ysize *2, sizeof(unsigned char), infile) != 1)
             printf ("Read < %d chars when loading file %s\n", hsize*vsize*3, "ss");
     }
 }
 
-void loadFrameBuffer_diff_480320()
-{
+void loadFrameBuffer_diff_480320() {
     int  xsize=480, ysize=320;
     unsigned char *buffer;
     FILE *infile=fopen("/dev/fb0","rb");
@@ -460,18 +438,16 @@ void loadFrameBuffer_diff_480320()
     buffer = (unsigned char *) malloc(xsize * ysize * 2);
     fseek(infile, 0, 0);
 
-    if (fread (buffer, xsize * ysize *2, sizeof(unsigned char), infile) != 1)
-        {
-
-            printf ("Read < %d chars when loading file %s\n", hsize*vsize*3, "ss");
-            printf ("config.txt setting error\n") ;
-            return;
-        }
+    if(fread (buffer, xsize * ysize *2, sizeof(unsigned char), infile) != 1) {
+        printf("Read < %d chars when loading file %s\n", hsize*vsize*3, "ss");
+        printf("config.txt setting error\n") ;
+        return;
+    }
     ili9481_Setwindow(0,480-1,0,320-1);
     LCD_CS_CLR;
     LCD_RS_SET;
 
-    for (i=0; i < ysize; i++) {
+    for(i=0; i < ysize; i++) {
         for(j=0; j< xsize; j++) {
             diffmap[i][j]=1;
             drawmap[0][i][j]=0;
@@ -482,31 +458,31 @@ void loadFrameBuffer_diff_480320()
 
     flag=1;
 
-    while (1) {
+    while(1) {
 
         numdiff=0;
         flag=1-flag;
         diffex=diffey=0;
         diffsx=diffsy=65535;
 
-        for(i=0; i < ysize; i++){
+        for(i=0; i < ysize; i++) {
             for(j=0; j < xsize; j++) {
-                offset =  (i * xsize+ j)*2;
+                offset =  (i * xsize+ j) * 2;
                 p=(buffer[offset+1] << 8) | buffer[offset];
 
                 //drawmap[flag][i>>1][j>>1] = p;
-                if (drawmap[1-flag][i][j] != p) {
+                if(drawmap[1-flag][i][j] != p) {
                     drawmap[flag][i][j] = p;
                     diffmap[i][j]=1;
                     drawmap[1-flag][i][j]=p;
                     numdiff++;
-                    if ((i) < diffsx)
+                    if((i) < diffsx)
                         diffsx = i;
-                    if ((i) > diffex)
+                    if((i) > diffex)
                         diffex = i ;
-                    if ((j)< diffsy)
+                    if((j)< diffsy)
                         diffsy=j;
-                    if ((j)>diffey)
+                    if((j)>diffey)
                         diffey = j ;
 
                 } else {
@@ -516,32 +492,32 @@ void loadFrameBuffer_diff_480320()
             }
 
         }
-        if (numdiff > 400){
+        if(numdiff > 400){
             // printf ("(%d, %d) - (%d, %d)\n",diffsx, diffsy, diffex, diffey);
 
             //area = ((abs(diffex - diffsx)+1)*(1+abs(diffey-diffsy)));
             //printf("diff:%d, area:%d, cov:%f\n",numdiff, area,(1.0*numdiff)/area);
         }
-        if (numdiff< 2){
+        if(numdiff < 2) {
             ili9481_Setwindow(0,480-1,0,320-1);
             LCD_CS_CLR;
             LCD_RS_SET;
-            for (i=diffsx; i<=diffex; i++){
-                for (j=diffsy;j<=diffey; j++) {
-                    if (diffmap[i][j]!=0)
+            for(i=diffsx; i<=diffex; i++) {
+                for(j=diffsy;j<=diffey; j++) {
+                    if(diffmap[i][j]!=0)
                         write_dot(i,j,drawmap[flag][i][j]);
                 }
             }
             usleep(700L);
 
-        } else{
+        } else {
             ili9481_Setwindow(diffsy,diffey,diffsx,diffex);
             LCD_CS_CLR;
             LCD_RS_SET;
 
             //printf ("(%d, %d) - (%d, %d)\n",diffsx, diffsy, diffex, diffey);
-            for (i=diffsx; i<=diffex; i++){
-                for (j=diffsy;j<=diffey; j++) {
+            for(i=diffsx; i<=diffex; i++) {
+                for(j=diffsy;j<=diffey; j++) {
                     LCD_WR_Data(drawmap[flag][i][j]);
                 }
             }
@@ -549,19 +525,17 @@ void loadFrameBuffer_diff_480320()
 
         fseek(infile, 0, 0);
 
-        if (fread (buffer, xsize * ysize *2, sizeof(unsigned char), infile) != 1)
+        if(fread (buffer, xsize * ysize *2, sizeof(unsigned char), infile) != 1)
             printf ("Read < %d chars when loading file %s\n", hsize*vsize*3, "ss");
     }
 }
 
-int main (void)
-{
+int main (void) {
     printf("bcm2835 init now\n");
-    if (!bcm2835_init())
-        {
-            printf("bcm2835 init error\n");
-            return 1;
-        }
+    if (!bcm2835_init()) {
+        printf("bcm2835 init error\n");
+        return 1;
+    }
     bcm2835_gpio_fsel(SPICS, BCM2835_GPIO_FSEL_OUTP) ;
     bcm2835_gpio_fsel(SPIRS, BCM2835_GPIO_FSEL_OUTP) ;
     bcm2835_gpio_fsel(SPIRST, BCM2835_GPIO_FSEL_OUTP) ;
@@ -581,7 +555,7 @@ int main (void)
 
     LCD_Init();
     LCD_test();
-    //loadFrameBuffer_diff_480320();
-    loadFrameBuffer_diff_960640();
+    loadFrameBuffer_diff_480320();
+    //loadFrameBuffer_diff_960640();
     return 0 ;
 }
